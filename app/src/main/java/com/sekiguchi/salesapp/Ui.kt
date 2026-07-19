@@ -28,8 +28,8 @@ object Ui {
     val WARN_BG = Color.parseColor("#FFF6E0")
     val WARN = Color.parseColor("#8A6100")
 
-    const val MP = ViewGroup.LayoutParams.MATCH_PARENT
-    const val WC = ViewGroup.LayoutParams.WRAP_CONTENT
+    val MP = ViewGroup.LayoutParams.MATCH_PARENT
+    val WC = ViewGroup.LayoutParams.WRAP_CONTENT
 
     fun dp(c: Context, v: Int): Int = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), c.resources.displayMetrics
@@ -107,7 +107,7 @@ object Ui {
     fun button(c: Context, text: String, bg: Int = ACCENT, fg: Int = Color.WHITE, onClick: () -> Unit): Button {
         val b = Button(c)
         b.text = text
-        b.isAllCaps = false
+        b.setAllCaps(false)
         b.setTextColor(fg)
         b.textSize = 16f
         b.background = rounded(bg, dp(c, 10).toFloat())

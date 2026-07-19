@@ -6,7 +6,7 @@ import org.json.JSONObject
 
 /**
  * 2層構造:
- *   assets/*.json          … 本体。アプリ更新で上書きされる
+ *   assets 内の JSON          … 本体。アプリ更新で上書きされる
  *   SharedPreferences      … ユーザー編集分。更新しても残る
  *
  * 保存する値には必ず出所タグ (personal / public / company-derived) を持たせる。

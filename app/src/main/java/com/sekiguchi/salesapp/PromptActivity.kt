@@ -22,10 +22,6 @@ class PromptActivity : Activity() {
 
     private val slotFields = HashMap<String, EditText>()
 
-    /** 社内情報混入チェッカーの先行実装 */
-    private val companyPattern = Regex("株式会社|\\(株\\)|（株）|有限会社|合同会社|㈱")
-    private val modelPattern = Regex("[A-Za-z]{2,}-?[0-9]{3,}")
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         root = try {
@@ -149,7 +145,7 @@ class PromptActivity : Activity() {
             }
 
             warnBox.removeAllViews()
-            val hits = checkLeak(values.values.joinToString(" "))
+            val hits = Leak.check(values.values.joinToString(" "))
             if (hits.isNotEmpty()) {
                 val wc = Ui.card(this, Ui.WARN_BG, Ui.WARN)
                 wc.addView(Ui.body(this,
@@ -242,10 +238,4 @@ class PromptActivity : Activity() {
         return sb.toString()
     }
 
-    private fun checkLeak(text: String): List<String> {
-        val hits = ArrayList<String>()
-        companyPattern.findAll(text).forEach { if (!hits.contains(it.value)) hits.add(it.value) }
-        modelPattern.findAll(text).forEach { if (!hits.contains(it.value)) hits.add(it.value) }
-        return hits
-    }
 }

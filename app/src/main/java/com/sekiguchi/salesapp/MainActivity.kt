@@ -33,6 +33,14 @@ class MainActivity : Activity() {
             startActivity(Intent(this, PromptActivity::class.java))
         })
 
+        col.addView(Ui.bigButton(this, "本日のルート", "エリア間の実測から訪問順を最適化", Ui.ACCENT) {
+            startActivity(Intent(this, RouteActivity::class.java))
+        })
+
+        col.addView(Ui.bigButton(this, "トーク集・反省事例", "好評だった言い回しと失敗の記録", Ui.ACCENT) {
+            startActivity(Intent(this, TalksActivity::class.java))
+        })
+
         col.addView(Ui.heading(this, "保存済み"))
         val card = Ui.card(this)
         card.addView(Ui.body(this, "トーク集：" + Store.talkCount(this) + "件", Ui.TEXT, 15f))

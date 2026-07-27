@@ -3,10 +3,17 @@ package com.sekiguchi.salesapp
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
+import android.widget.LinearLayout
 import android.widget.Toast
 import org.json.JSONArray
 
+/**
+ * トップページ。
+ * 営業中 / 営業準備中 / 情報ツール の3分類。
+ * 現場で咄嗟に押すものほど上に、参照するだけのものは下にまとめる。
+ */
 class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,42 +26,55 @@ class MainActivity : Activity() {
         build()
     }
 
+    private fun section(col: LinearLayout, title: String, note: String) {
+        val t = Ui.body(this, title, Ui.ACCENT, 15f)
+        t.typeface = Typeface.DEFAULT_BOLD
+        t.letterSpacing = 0.06f
+        t.layoutParams = Ui.params(this, 22, 2)
+        col.addView(t)
+        col.addView(Ui.body(this, note, Ui.SUB, 12f))
+    }
+
+    private fun item(col: LinearLayout, label: String, sub: String, color: Int, cls: Class<*>) {
+        col.addView(Ui.bigButton(this, label, sub, color) {
+            startActivity(Intent(this, cls))
+        })
+    }
+
     private fun build() {
         val (scroll, col) = Ui.screen(this)
 
         col.addView(Ui.title(this, "営業支援"))
-        col.addView(Ui.body(this, "個人作成・社内情報なし・オフライン動作", Ui.SUB, 13f))
+        col.addView(Ui.body(this, "個人作成・社内情報なし・通信なし・権限ゼロ", Ui.SUB, 12f))
 
-        col.addView(Ui.bigButton(this, "緊急時マニュアル", "事故・急病・移動不能", Ui.DANGER) {
-            startActivity(Intent(this, EmergencyActivity::class.java))
-        })
+        // ---- 営業中 ----
+        section(col, "営業中", "外に出ている間に開くもの")
+        item(col, "切り返し", "言われた言葉から引く", Ui.ACCENT, RebuttalActivity::class.java)
+        item(col, "概算計算", "月額・回収年数・粗利・電気代", Ui.ACCENT, CalcActivity::class.java)
+        item(col, "商談タイマー", "持ち時間を4つに配分", Ui.ACCENT, TimerActivity::class.java)
+        item(col, "本日のルート", "打刻から訪問順を最適化", Ui.ACCENT, RouteActivity::class.java)
+        item(col, "クイックメモ", "訪問直後に音声入力で残す", Ui.ACCENT, MemoActivity::class.java)
+        item(col, "緊急時マニュアル", "事故・急病・移動不能", Ui.DANGER, EmergencyActivity::class.java)
 
-        col.addView(Ui.bigButton(this, "営業プロンプト", "場面別・全10シチュエーション", Ui.ACCENT) {
-            startActivity(Intent(this, PromptActivity::class.java))
-        })
+        // ---- 営業準備中 ----
+        section(col, "営業準備中", "机やクルマの中で組み立てるもの")
+        item(col, "営業プロンプト", "場面別・全10シチュエーション", Ui.ACCENT, PromptActivity::class.java)
+        item(col, "トーク集・反省事例", "好評だった言い回しと失敗の記録", Ui.ACCENT, TalksActivity::class.java)
+        item(col, "走行距離・経費", "自分の精算と申告のため", Ui.ACCENT, ExpenseActivity::class.java)
 
-        col.addView(Ui.bigButton(this, "本日のルート", "エリア間の実測から訪問順を最適化", Ui.ACCENT) {
-            startActivity(Intent(this, RouteActivity::class.java))
-        })
+        // ---- 情報ツール ----
+        section(col, "情報ツール", "現場で開く頻度は低い。調べる・整える用")
+        item(col, "参考情報", "法令・業界地図・単位換算", Ui.SUB, ReferenceActivity::class.java)
 
-        col.addView(Ui.bigButton(this, "トーク集・反省事例", "好評だった言い回しと失敗の記録", Ui.ACCENT) {
-            startActivity(Intent(this, TalksActivity::class.java))
-        })
-
-        col.addView(Ui.heading(this, "保存済み"))
         val card = Ui.card(this)
-        card.addView(Ui.body(this, "トーク集：" + Store.talkCount(this) + "件", Ui.TEXT, 15f))
+        card.addView(Ui.body(this, "保存済みの記録　" + Store.talkCount(this) + "件", Ui.TEXT, 14f))
         val log = Store.purgeLog(this)
-        if (log.isNotEmpty()) {
-            card.addView(Ui.body(this, log, Ui.SUB, 12f))
-        }
+        if (log.isNotEmpty()) card.addView(Ui.body(this, log, Ui.SUB, 12f))
+        card.addView(Ui.body(this,
+            "会社由来タグが付いたデータのみを物理削除します。個人作成分・公開情報は残ります。",
+            Ui.SUB, 12f))
+        card.addView(Ui.button(this, "会社由来データを削除", Ui.SUB) { confirmPurge() })
         col.addView(card)
-
-        col.addView(Ui.heading(this, "データ管理"))
-        col.addView(Ui.body(this,
-            "会社由来タグ（company-derived）が付いたデータのみを物理削除します。" +
-                "個人作成分・公開情報は残ります。", Ui.SUB, 13f))
-        col.addView(Ui.button(this, "会社由来データを削除", Ui.SUB) { confirmPurge() })
 
         setContentView(scroll)
     }
@@ -73,7 +93,6 @@ class MainActivity : Activity() {
             .show()
     }
 
-    /** emergency_manual.json から tag が company-derived の連絡先IDを集める */
     private fun companyContactIds(): List<String> {
         val ids = ArrayList<String>()
         try {

@@ -47,11 +47,34 @@ class MainActivity : Activity() {
         col.addView(Ui.title(this, "営業支援"))
         col.addView(Ui.body(this, "個人作成・社内情報なし・通信なし・権限ゼロ", Ui.SUB, 12f))
 
+        // ---- クイックアクション ----
+        val quick = LinearLayout(this)
+        quick.orientation = LinearLayout.HORIZONTAL
+        quick.layoutParams = Ui.params(this, 14, 2)
+        val actions = listOf(
+            Pair("メモ", MemoActivity::class.java),
+            Pair("切り返し", RebuttalActivity::class.java),
+            Pair("計算", CalcActivity::class.java),
+            Pair("タイマー", TimerActivity::class.java)
+        )
+        for (a in actions) {
+            val b = Ui.button(this, a.first, Ui.ACCENT) {
+                startActivity(Intent(this, a.second))
+            }
+            b.textSize = 13f
+            val lp = LinearLayout.LayoutParams(0, Ui.WC, 1f)
+            lp.rightMargin = Ui.dp(this, 4)
+            b.layoutParams = lp
+            quick.addView(b)
+        }
+        col.addView(quick)
+
         // ---- 営業中 ----
         section(col, "営業中", "外に出ている間に開くもの")
         item(col, "切り返し", "言われた言葉から引く", Ui.ACCENT, RebuttalActivity::class.java)
         item(col, "概算計算", "月額・回収年数・粗利・電気代", Ui.ACCENT, CalcActivity::class.java)
         item(col, "商談タイマー", "持ち時間を4つに配分", Ui.ACCENT, TimerActivity::class.java)
+        item(col, "案件", "段階と次アクション・停滞検知", Ui.ACCENT, DealActivity::class.java)
         item(col, "本日のルート", "打刻から訪問順を最適化", Ui.ACCENT, RouteActivity::class.java)
         item(col, "クイックメモ", "訪問直後に音声入力で残す", Ui.ACCENT, MemoActivity::class.java)
         item(col, "緊急時マニュアル", "事故・急病・移動不能", Ui.DANGER, EmergencyActivity::class.java)
@@ -60,10 +83,12 @@ class MainActivity : Activity() {
         section(col, "営業準備中", "机やクルマの中で組み立てるもの")
         item(col, "営業プロンプト", "場面別・全10シチュエーション", Ui.ACCENT, PromptActivity::class.java)
         item(col, "トーク集・反省事例", "好評だった言い回しと失敗の記録", Ui.ACCENT, TalksActivity::class.java)
+        item(col, "分析", "自分の動き方を振り返る", Ui.ACCENT, InsightActivity::class.java)
         item(col, "走行距離・経費", "自分の精算と申告のため", Ui.ACCENT, ExpenseActivity::class.java)
 
         // ---- 情報ツール ----
         section(col, "情報ツール", "現場で開く頻度は低い。調べる・整える用")
+        item(col, "オントロジー", "概念整理・課題と解決策・段階", Ui.SUB, OntologyActivity::class.java)
         item(col, "参考情報", "法令・業界地図・単位換算", Ui.SUB, ReferenceActivity::class.java)
 
         val card = Ui.card(this)

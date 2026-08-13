@@ -254,6 +254,16 @@ object Store {
                 count++
             }
         }
+        // 案件データは会社の営業活動に由来するため company-derived 扱い
+        val dealCount = try {
+            JSONArray(get(c, "deals", "[]")).length()
+        } catch (e: Exception) {
+            0
+        }
+        if (dealCount > 0) {
+            editor.remove("deals")
+            count += dealCount
+        }
         editor.apply()
         put(c, "purge.log", "削除実行 " + java.text.SimpleDateFormat(
             "yyyy-MM-dd HH:mm", java.util.Locale.JAPAN

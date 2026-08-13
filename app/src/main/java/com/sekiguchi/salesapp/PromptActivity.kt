@@ -16,6 +16,7 @@ import org.json.JSONObject
 class PromptActivity : Activity() {
 
     private var root: JSONObject? = null
+    private var lib = "situations"         // situations = 場面別 / inferences = 推論
     private var current: Int = -1          // -1 = 一覧
     private var generated: String? = null
     private var profileIndex = 0
@@ -71,7 +72,30 @@ class PromptActivity : Activity() {
             "生成するのはプロンプト文。コピーしてAIアプリに貼って使う。" +
                 "通信もAPIキーも使わない。", Ui.SUB, 13f))
 
-        val sits = r.getJSONArray("situations")
+        val row = LinearLayout(this)
+        row.orientation = LinearLayout.HORIZONTAL
+        row.layoutParams = Ui.params(this, 10, 4)
+        for (t in listOf(Pair("situations", "場面別"), Pair("inferences", "推論"))) {
+            val b = Ui.button(this, t.second, if (lib == t.first) Ui.ACCENT else Ui.SUB) {
+                lib = t.first
+                current = -1
+                generated = null
+                render()
+            }
+            b.textSize = 14f
+            val lp = LinearLayout.LayoutParams(0, Ui.WC, 1f)
+            lp.rightMargin = Ui.dp(this, 4)
+            b.layoutParams = lp
+            row.addView(b)
+        }
+        col.addView(row)
+
+        if (lib == "inferences") {
+            col.addView(Ui.body(this,
+                "案件の状況をAIに読ませて、次の一手を出させるための問い。", Ui.SUB, 12f))
+        }
+
+        val sits = r.getJSONArray(lib)
         for (i in 0 until sits.length()) {
             val s = sits.getJSONObject(i)
             val index = i
@@ -94,7 +118,7 @@ class PromptActivity : Activity() {
         val (scroll, col) = Ui.screen(this)
         slotFields.clear()
 
-        val sit = r.getJSONArray("situations").getJSONObject(index)
+        val sit = r.getJSONArray(lib).getJSONObject(index)
         val template = sit.getString("template")
         val slots = r.getJSONObject("slots")
 
@@ -191,7 +215,7 @@ class PromptActivity : Activity() {
         })
 
         col.addView(Ui.button(this, "トーク集へ保存", Ui.ACCENT) {
-            val title = root?.getJSONArray("situations")?.getJSONObject(current)
+            val title = root?.getJSONArray(lib)?.getJSONObject(current)
                 ?.getString("title") ?: "プロンプト"
             Store.saveTalk(this, title, out.text.toString())
             Toast.makeText(this, "保存しました", Toast.LENGTH_SHORT).show()

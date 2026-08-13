@@ -40,5 +40,12 @@
         <activity android:name=".MemoActivity" android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <activity android:name=".DealActivity" android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".OntologyActivity" android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".InsightActivity" android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
     </application>
 </manifest>

@@ -8,7 +8,7 @@ Termux + GitHub Actions ビルド前提。Gradle wrapper なし、外部ライ�
 SalesApp/
   settings.gradle / build.gradle / gradle.properties
   deploy.sh                        ← push とタグ発行を1コマンドで完結
-  .github/workflows/build.yml      ← Gradle 8.9 を Actions 側で固定（debug APK）
+  .github/workflows/build.yml      ← コンパイル通過確認のみ（Artifacts は出さない）
   .github/workflows/release.yml    ← カタログ管理システムが配置（配布ビルド）
   ci/appathy.keystore              ← カタログ管理システムが配置（配布署名）
   app/
@@ -68,6 +68,7 @@ git config --global github.token ghp_xxxxxxxxxxxx
 | 権限 | ゼロ。電話は `ACTION_DIAL` で権限不要 |
 | 出所タグ | 連絡先と現場記録に付与。`company-derived` のみ一括削除可能 |
 | 混入チェック | 「株式会社」「型番らしき英数字」を検出して警告（機能2の入力時） |
+| Artifacts | 出力しない。無料枠 0.5GB を消費するため。APK は Release から配布 |
 
 ## 画面構成（v4）
 

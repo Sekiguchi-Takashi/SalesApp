@@ -7,8 +7,10 @@ Termux + GitHub Actions ビルド前提。Gradle wrapper なし、外部ライ�
 ```
 SalesApp/
   settings.gradle / build.gradle / gradle.properties
-  setup_repo.sh                    ← リポジトリ作成〜pushを一括実行
-  .github/workflows/build.yml      ← Gradle 8.9 を Actions 側で固定
+  deploy.sh                        ← push とタグ発行を1コマンドで完結
+  .github/workflows/build.yml      ← Gradle 8.9 を Actions 側で固定（debug APK）
+  .github/workflows/release.yml    ← カタログ管理システムが配置（配布ビルド）
+  ci/appathy.keystore              ← カタログ管理システムが配置（配布署名）
   app/
     build.gradle
     debug.keystore                 ← 署名固定用（コミット対象）
@@ -28,44 +30,27 @@ SalesApp/
 
 ```bash
 cd ~
-mkdir -p SalesApp
-cd SalesApp
-
-# ★ -o を付ける（上書き確認で止まらないように）
-unzip -o ~/storage/downloads/SalesApp.zip -d ~/SalesApp
-
-# 展開先の確認。ここで一段深いフォルダになっていないかを必ず見る
-ls
-# → settings.gradle が見えていればOK
-#   SalesApp/SalesApp/ のように入れ子になっていたら
-#   cd SalesApp して以降を実行する
-
-# 権限付与
-chmod +x setup_repo.sh
-
-# リポジトリ作成 → commit → push まで一括
-GITHUB_TOKEN=ghp_xxxxxxxxxxxx ./setup_repo.sh SalesApp private
+cp /sdcard/Download/SalesApp_v5.zip .
+unzip -o SalesApp_v5.zip
+cd ~/SalesApp
+./deploy.sh "コミットメッセージ"
 ```
 
-`setup_repo.sh` は冒頭で `cd "$(dirname "$0")"` を実行するので、
-ホームディレクトリで `git init` してしまう事故は起きません。
+`deploy.sh` が push とタグ発行までを1コマンドで完結させます。
+`git pull --rebase origin main` を含めているため、カタログ管理システムが API 経由で
+`.github/workflows/release.yml` と `ci/appathy.keystore` を直接コミットしていても
+rejected になりません。
 
-push が済むと Actions が自動で走ります。
+**この2ファイルと `ci/` ディレクトリは配布ビルドに必要なので削除しないこと。**
+ZIP には含まれていませんが、`unzip -o` は既存ファイルを消さないため残ります。
 
-```
-https://github.com/Sekiguchi-Takashi/SalesApp/actions
-```
-
-Artifacts から `SalesApp-debug-apk` をダウンロードして端末にインストール。
-
-## 2回目以降の更新
+トークンは事前に一度だけ登録します。
 
 ```bash
-cd ~/SalesApp
-git add -A
-git commit -m "prompt_library: 相手タイプの調整"
-git push
+git config --global github.token ghp_xxxxxxxxxxxx
 ```
+
+タグが打たれると Actions がビルドして Release を作り、自作アプリストアに更新として現れます。
 
 ## 更新運用の考え方
 

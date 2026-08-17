@@ -7,9 +7,8 @@ Termux + GitHub Actions ビルド前提。Gradle wrapper なし、外部ライ�
 ```
 SalesApp/
   settings.gradle / build.gradle / gradle.properties
-  deploy.sh                        ← push とタグ発行を1コマンドで完結
-  .github/workflows/build.yml      ← コンパイル通過確認のみ（Artifacts は出さない）
-  .github/workflows/release.yml    ← カタログ管理システムが配置（配布ビルド）
+  deploy.sh                        ← push → pull --rebase → タグ発行を1コマンドで完結
+  .github/workflows/release.yml    ← カタログ管理システムが配置（タグ起動の配布ビルド）
   ci/appathy.keystore              ← カタログ管理システムが配置（配布署名）
   app/
     build.gradle
@@ -29,19 +28,26 @@ SalesApp/
 ## 展開からpushまで
 
 ```bash
+cp /sdcard/Download/SalesApp_v7.zip ~
 cd ~
-cp /sdcard/Download/SalesApp_v5.zip .
-unzip -o SalesApp_v5.zip
-cd ~/SalesApp
-./deploy.sh "コミットメッセージ"
+unzip -o SalesApp_v7.zip
+~/SalesApp/deploy.sh "コミットメッセージ"
 ```
 
-`deploy.sh` が push とタグ発行までを1コマンドで完結させます。
-`git pull --rebase origin main` を含めているため、カタログ管理システムが API 経由で
-`.github/workflows/release.yml` と `ci/appathy.keystore` を直接コミットしていても
-rejected になりません。
+`deploy.sh` が push → `git pull --rebase origin main` → タグ発行 まで1コマンドで完結させます。
 
-**この2ファイルと `ci/` ディレクトリは配布ビルドに必要なので削除しないこと。**
+次タグは `git tag --list 'v*' | sort -V` の最大値から算出し、`git tag` / `git push origin タグ名`
+でローカル発行します。GitHub API の heads/releases 参照は反映遅延で一つ前のタグに付くため使いません。
+
+タグを打たずに push だけしたい場合は第2引数に `notag` を渡します。
+
+```bash
+~/SalesApp/deploy.sh "作業中" notag
+```
+
+pull --rebase が必須なのは、カタログ管理システムが API 経由で
+`.github/workflows/release.yml` と `ci/appathy.keystore` を直接コミットしているためです。
+**この2ファイルと `ci/` ディレクトリは配布ビルドに必要なので削除・追跡解除しないこと。**
 ZIP には含まれていませんが、`unzip -o` は既存ファイルを消さないため残ります。
 
 トークンは事前に一度だけ登録します。
@@ -68,7 +74,8 @@ git config --global github.token ghp_xxxxxxxxxxxx
 | 権限 | ゼロ。電話は `ACTION_DIAL` で権限不要 |
 | 出所タグ | 連絡先と現場記録に付与。`company-derived` のみ一括削除可能 |
 | 混入チェック | 「株式会社」「型番らしき英数字」を検出して警告（機能2の入力時） |
-| Artifacts | 出力しない。無料枠 0.5GB を消費するため。APK は Release から配布 |
+| CI | release.yml（タグ起動）のみ。build.yml は作らない |
+| Artifacts | 出力しない。無料枠 0.5GB を消費し全ビルドが落ちるため。APK は Release から配布 |
 
 ## 画面構成（v4）
 
